@@ -32,18 +32,90 @@ function block_course_manager_edit_controls(moodle_url $currenturl) {
     $viewurl = new moodle_url('/blocks/course_manager/index.php');
     $tabs[] = new tabobject('viewall', new moodle_url($viewurl), get_string('key2', 'block_course_manager'));
 
+    $caturl = new moodle_url('/blocks/course_manager/category.php');
     $categories = $DB->get_records('course_manager_categories', array('user' => $USER->id));
     foreach ($categories as $category) {
-        $tabs[] = new tabobject('view' . $category->id, new moodle_url($viewurl, array('id' => $category->id)), $category->name);
+        $tabs[] = new tabobject('view' . $category->id, new moodle_url($caturl, array('id' => $category->id)), $category->name);
         if ($currenturl->param('id') == $category->id) {
             $currenttab = 'view' . $category->id;
         }
     }
 
-    $tabs[] = new tabobject('addcat', new moodle_url($viewurl, array('id' => -1)), get_string('key3', 'block_course_manager'));
-    if ($currenturl->param('id') == -1) {
+    $addcat = new moodle_url('/blocks/course_manager/addcat.php');
+    $tabs[] = new tabobject('addcat', new moodle_url($addcat), get_string('key3', 'block_course_manager'));
+    if ($currenturl->get_path() === $addcat->get_path()) {
         $currenttab = 'addcat';
     }
 
     return new tabtree($tabs, $currenttab);
+}
+
+function block_course_manager_courses_table() {
+    global $USER, $OUTPUT, $CFG;
+    
+    $data = array();
+    $courses = enrol_get_users_courses($USER->id, false, 'id, fullname, visible', 'visible DESC, fullname ASC');
+    foreach ($courses as $course) {
+        $line = array();
+        $coursename = $OUTPUT->pix_icon('i/course', null, '', array('class' => 'icon')) . $course->fullname;
+        $courseurl = "$CFG->wwwroot/course/view.php?id=$course->id";
+        $content = html_writer::link($courseurl, $coursename);
+        $line[] = $OUTPUT->heading($content, 4);
+
+        $transferurl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php', array('transfer' => true, 'course' => $course->id));
+        $line[] = $OUTPUT->single_button($transferurl, get_string('key6', 'block_course_manager'), 'get');
+
+        $data[] = $row = new html_table_row($line);
+        if (!$course->visible) {
+            $row->attributes['class'] = 'dimmed_text';
+        }
+    }
+    if (count($data) > 0) {
+        $table = new html_table();
+        $table->head = array('', '');
+        $table->attributes['class'] = 'generaltable';
+        $table->data = $data;
+        return html_writer::table($table);
+    }
+    return false;
+}
+
+function block_course_manager_coursecats_table($category) {
+    global $DB, $OUTPUT, $CFG;
+    
+    $data = array();
+    $coursecats = $DB->get_records('course_manager_courses', array('category' => $category));
+    foreach ($coursecats as $coursecat) {
+        /* проверка, что курс существует и пользователь на него подписан */
+        $course = $DB->get_record('course', array('id' => $coursecat->course));
+        if (!$course) { // если курс был удален
+            $DB->delete_records('course_manager_courses', array('course' => $coursecat->course)); // удаляем ВСЕ записи с данным курсом
+            continue;
+        } else if (!is_enrolled(context_course::instance($coursecat->course))) { // если пользователь был отписан от курса
+            $DB->delete_records('course_manager_courses', array('course' => $coursecat->course, 'category' => $category)); // удаляем курс в текущей категории
+            continue;
+        }
+
+        $line = array();
+        $coursename = $OUTPUT->pix_icon('i/course', null, '', array('class' => 'icon')) . $course->fullname;
+        $courseurl = "$CFG->wwwroot/course/view.php?id=$coursecat->course";
+        $content = html_writer::link($courseurl, $coursename);
+        $line[] = $OUTPUT->heading($content, 4);
+
+        $deleteurl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/category.php', array('id' => $category, 'coursedelete' => true, 'course' => $coursecat->course));
+        $line[] = $OUTPUT->single_button($deleteurl, get_string('key10', 'block_course_manager'), 'post');
+
+        $data[] = $row = new html_table_row($line);
+        if (!$course->visible) {
+            $row->attributes['class'] = 'dimmed_text';
+        }
+    }
+    if (count($data) > 0) {
+        $table = new html_table();
+        $table->head = array('', '');
+        $table->attributes['class'] = 'generaltable';
+        $table->data = $data;
+        return html_writer::table($table);
+    }
+    return false;
 }

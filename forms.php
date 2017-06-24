@@ -34,9 +34,6 @@ class course_manager_transfer_form extends moodleform {
         $mform = & $this->_form;
         $courseid = $this->_customdata['course'];
 
-        $mform->addElement('hidden', 'id', 0); // признак режима работы со списком курсов
-        $mform->setType('id', PARAM_INT);
-
         $mform->addElement('hidden', 'transfer', true); // признак добавления курса в категорию
         $mform->setType('transfer', PARAM_BOOL);
 
@@ -50,6 +47,7 @@ class course_manager_transfer_form extends moodleform {
         
         $options = $this->get_category_options($courseid);
         $mform->addElement('select', 'coursecategory', get_string('key7', 'block_course_manager'), $options);
+        $mform->addRule('coursecategory', get_string('required'), 'required');
 
         $this->add_action_buttons();
     }
@@ -93,9 +91,6 @@ class course_manager_add_category_form extends moodleform {
 
     public function definition() {
         $mform = $this->_form;
-
-        $mform->addElement('hidden', 'id', -1); // признак режима добавления категории
-        $mform->setType('id', PARAM_INT);
 
         $mform->addElement('text', 'name', get_string('key7', 'block_course_manager'), 'maxlength="250" size="50"');
         $mform->addRule('name', get_string('required'), 'required', null, 'client');

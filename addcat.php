@@ -26,10 +26,7 @@ require_once('../../config.php');
 require_once($CFG->dirroot.'/blocks/course_manager/lib.php');
 require_once($CFG->dirroot.'/blocks/course_manager/forms.php');
 
-$transfer = optional_param('transfer', false, PARAM_BOOL);
-$courseid = optional_param('course', 0, PARAM_INT);
-
-$baseurl = new moodle_url('/blocks/course_manager/index.php');
+$baseurl = new moodle_url('/blocks/course_manager/addcat.php');
 $strcoursemanager = get_string('pluginname', 'block_course_manager');
 
 $PAGE->set_context(context_system::instance());
@@ -44,31 +41,23 @@ if (isguestuser()) {
     print_error('error');
 }
 
-$resultcontent = '';
-$redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php');
-$PAGE->navbar->add(get_string('key2', 'block_course_manager'), $baseurl);
-if ($transfer) {
-    $transferform = new course_manager_transfer_form(null, array('course' => $courseid));
-    if ($transferform->is_cancelled()) {
-        redirect($redirecturl);
-    } else if ($data = $transferform->get_data()) {
-        $new = new stdClass();
-        $new->category = $data->coursecategory;
-        $new->course = $data->course;
-        $DB->insert_record('course_manager_courses', $new);
-        redirect($redirecturl);
-    }
-    $resultcontent = $transferform->render();
-} else {
-    $coursetable = block_course_manager_courses_table();
-    if ($coursetable) {
-        $resultcontent = $coursetable;
-    }
+$PAGE->navbar->add(get_string('key3', 'block_course_manager'), $baseurl);
+$addcatform = new course_manager_add_category_form();
+if ($addcatform->is_cancelled()) {
+    $redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php');
+    redirect($redirecturl);
+} else if ($data = $addcatform->get_data()) {
+    $newcat = new stdClass();
+    $newcat->name = $data->name;
+    $newcat->user = $USER->id;
+    $newcat->id = $DB->insert_record('course_manager_categories', $newcat);
+    $redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/category.php', array('id' => $newcat->id));
+    redirect($redirecturl);
 }
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($strcoursemanager);
 $editcontrols = block_course_manager_edit_controls($baseurl);
 echo $OUTPUT->render($editcontrols);
-echo $resultcontent;
+$addcatform->display();
 echo $OUTPUT->footer();
