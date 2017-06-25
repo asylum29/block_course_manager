@@ -32,20 +32,19 @@ class course_manager_transfer_form extends moodleform {
         global $CFG;
 
         $mform = & $this->_form;
-        $courseid = $this->_customdata['course'];
+        $course = $this->_customdata['course'];
 
         $mform->addElement('hidden', 'transfer', true); // признак добавления курса в категорию
         $mform->setType('transfer', PARAM_BOOL);
 
-        $mform->addElement('hidden', 'course', $courseid);
+        $mform->addElement('hidden', 'course', $course->id);
         $mform->setType('course', PARAM_INT);
-
-        $course = get_course($courseid);
+        
         $courseurl = "$CFG->wwwroot/course/view.php?id=$course->id";
         $content = html_writer::link($courseurl, $course->fullname);
         $mform->addElement('static', 'coursename', get_string('key9', 'block_course_manager'), $content);
         
-        $options = $this->get_category_options($courseid);
+        $options = $this->get_category_options($course->id);
         $mform->addElement('select', 'coursecategory', get_string('key7', 'block_course_manager'), $options);
         $mform->addRule('coursecategory', get_string('required'), 'required');
 

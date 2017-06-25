@@ -48,7 +48,11 @@ $resultcontent = '';
 $redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php');
 $PAGE->navbar->add(get_string('key2', 'block_course_manager'), $baseurl);
 if ($transfer) {
-    $transferform = new course_manager_transfer_form(null, array('course' => $courseid));
+    $course = $DB->get_record('course', array('id' => $courseid));
+    if (!$course || !is_enrolled(context_course::instance($courseid))) {
+        print_error('key12', 'block_course_manager');
+    }
+    $transferform = new course_manager_transfer_form(null, array('course' => $course));
     if ($transferform->is_cancelled()) {
         redirect($redirecturl);
     } else if ($data = $transferform->get_data()) {
