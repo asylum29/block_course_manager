@@ -41,17 +41,16 @@ if (isguestuser()) {
     print_error('error');
 }
 
+$redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php');
 $PAGE->navbar->add(get_string('key3', 'block_course_manager'), $baseurl);
 $addcatform = new course_manager_add_category_form();
 if ($addcatform->is_cancelled()) {
-    $redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php');
     redirect($redirecturl);
 } else if ($data = $addcatform->get_data()) {
     $newcat = new stdClass();
-    $newcat->name = $data->name;
+    $newcat->name = trim($data->name);
     $newcat->user = $USER->id;
-    $newcat->id = $DB->insert_record('course_manager_categories', $newcat);
-    $redirecturl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/category.php', array('id' => $newcat->id));
+    $DB->insert_record('course_manager_categories', $newcat);
     redirect($redirecturl);
 }
 

@@ -13,7 +13,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
         <KEY NAME="user" TYPE="foreign" FIELDS="user" REFTABLE="user" REFFIELDS="id"/>
-        <KEY NAME="name" TYPE="unique" FIELDS="name"/>
+        <KEY NAME="ununique" TYPE="unique" FIELDS="user, name"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="course_manager_courses" COMMENT="">

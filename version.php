@@ -24,8 +24,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017240622;
+$plugin->version   = 2017260622;
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->requires  = 2016082500;
+$plugin->requires  = 2016052301;
 $plugin->component = 'block_course_manager';
-$plugin->release = 'v1.0';
+$plugin->release   = 'v1.0';

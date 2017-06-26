@@ -51,7 +51,7 @@ function block_course_manager_edit_controls(moodle_url $currenturl) {
 }
 
 function block_course_manager_courses_table() {
-    global $USER, $OUTPUT, $CFG;
+    global $DB, $USER, $OUTPUT, $CFG;
     
     $data = array();
     $courses = enrol_get_users_courses($USER->id, false, 'id, fullname, visible', 'visible DESC, fullname ASC');
@@ -60,7 +60,24 @@ function block_course_manager_courses_table() {
         $coursename = $OUTPUT->pix_icon('i/course', null, '', array('class' => 'icon')) . $course->fullname;
         $courseurl = "$CFG->wwwroot/course/view.php?id=$course->id";
         $content = html_writer::link($courseurl, $coursename);
-        $line[] = $OUTPUT->heading($content, 4);
+        $content = $OUTPUT->heading($content, 4);
+
+        $sql = "SELECT cat.id AS id, cat.name AS name
+                  FROM {course_manager_categories} cat
+                  JOIN {course_manager_courses} c 
+                    ON (c.category = cat.id)
+                 WHERE c.course = ? AND cat.user = ?";
+        $catnames = array();
+        foreach($DB->get_records_sql($sql, array($course->id, $USER->id)) as $coursecat) {
+            $catnames[] = $coursecat->name;
+        }
+        if (count($catnames) > 0) {
+            $catstring = html_writer::tag('b', get_string('key15', 'block_course_manager') . ':&nbsp;');
+            $catstring .= implode(', ', $catnames);
+            $content .= html_writer::div($catstring);
+        }
+
+        $line[] = $content;
 
         $transferurl = new moodle_url($CFG->wwwroot . '/blocks/course_manager/index.php', array('transfer' => true, 'course' => $course->id));
         $line[] = $OUTPUT->single_button($transferurl, get_string('key6', 'block_course_manager'), 'get');

@@ -99,11 +99,15 @@ class course_manager_add_category_form extends moodleform {
     }
 
     public function validation($data, $files) {
+        global $DB, $USER;
+
         $errors = parent::validation($data, $files);
 
         $name = trim($data['name']);
         if ($name === '') {
             $errors['name'] = get_string('key8', 'block_course_manager');
+        } else if ($DB->record_exists('course_manager_categories', array('user' => $USER->id, 'name' => $name))) {
+            $errors['name'] = get_string('key16', 'block_course_manager');
         }
 
         return $errors;
