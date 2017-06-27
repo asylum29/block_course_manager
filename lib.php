@@ -67,13 +67,14 @@ function block_course_manager_courses_table() {
                   JOIN {course_manager_courses} c 
                     ON (c.category = cat.id)
                  WHERE c.course = ? AND cat.user = ?";
-        $catnames = array();
+        $caturls = array();
         foreach($DB->get_records_sql($sql, array($course->id, $USER->id)) as $coursecat) {
-            $catnames[] = $coursecat->name;
+            $caturl = "$CFG->wwwroot/blocks/course_manager/category.php?id=$coursecat->id";
+            $caturls[] = html_writer::link($caturl, $coursecat->name);
         }
-        if (count($catnames) > 0) {
+        if (count($caturls) > 0) {
             $catstring = html_writer::tag('b', get_string('key15', 'block_course_manager') . ':&nbsp;');
-            $catstring .= implode(', ', $catnames);
+            $catstring .= implode(', ', $caturls);
             $content .= html_writer::div($catstring);
         }
 
