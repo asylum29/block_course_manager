@@ -24,6 +24,10 @@
 
 //$string['pluginname'] = 'Управление курсами';
 $string['pluginname'] = 'Course management';
+//$string['course_manager:myaddinstance'] = 'Добавлять новый блок «Управление курсами» на домашнюю страницу';
+$string['course_manager:myaddinstance'] = 'Add a new course management block to My home';
+//$string['course_manager:addinstance'] = 'Добавлять новый блок «Управление курсами»';
+$string['course_manager:addinstance'] = 'Add a new course management block';
 //$string['key1'] = 'Настройка курсов';
 $string['key1'] = 'Manage courses';
 //$string['key2'] = 'Мои курсы';
